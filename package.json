@@ -49,6 +49,9 @@
   "dependencies": {
     "airport-codes": "1.0.2",
     "async": "^2.6.0",
+    "apollo-client": "^2.0.1",
+    "apollo-client-preset": "^1.0.1",
+    "apollo-link-batch-http": "^1.0.0",
     "autotrack": "^1.1.0",
     "babel-plugin-lodash": "^3.3.2",
     "babel-polyfill": "6.20.0",
@@ -58,11 +61,14 @@
     "dexie": "^1.5.1",
     "expand-home-dir": "0.0.3",
     "firebase": "^4.5.0",
+    "graphql": "^0.11.7",
+    "graphql-tag": "^2.5.0",
     "isomorphic-fetch": "^2.2.1",
     "os-tmpdir": "^1.0.2",
     "pushstate-server": "2.1.0",
     "query-string": "4.2.3",
     "react": "15.4.1",
+    "react-apollo": "^2.0.0",
     "react-dom": "15.4.1",
     "react-ga": "^2.1.2",
     "react-hint": "^2.0.2",
@@ -80,17 +86,14 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "deploy": "yarn run build && env AWS_PROFILE=money aws s3 sync dist/ s3://destinysets.com/ --region=ap-southeast-2 --acl public-read",
+    "deploy":
+      "yarn run build && env AWS_PROFILE=money aws s3 sync dist/ s3://destinysets.com/ --region=ap-southeast-2 --acl public-read",
     "generate-strike-data": "node generateData.js",
     "test": "echo 'No tests lol'"
   },
   "babel": {
-    "plugins": [
-      "lodash"
-    ],
-    "presets": [
-      "react-app"
-    ]
+    "plugins": ["lodash"],
+    "presets": ["react-app"]
   },
   "eslintConfig": {
     "extends": "react-app"

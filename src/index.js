@@ -10,4 +10,13 @@ import './index.styl';
 import 'autotrack/lib/plugins/clean-url-tracker';
 import 'autotrack/lib/plugins/url-change-tracker';
 
-ReactDOM.render(<AppRouter />, document.getElementById('root'));
+import { ApolloProvider } from 'react-apollo';
+import { client } from './lib/apollo';
+
+const app = (
+  <ApolloProvider client={client}>
+    <AppRouter />
+  </ApolloProvider>
+);
+
+ReactDOM.render(app, document.getElementById('root'));

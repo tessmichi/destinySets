@@ -207,7 +207,7 @@ export function collectItemsFromProfile(profile, verbose = false) {
 
   function mapItem(item) {
     if (!verbose) {
-      return item.itemHash;
+      return item.itemHash.toString();
     }
 
     return {

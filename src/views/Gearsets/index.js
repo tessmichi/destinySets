@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import { sortBy } from 'lodash';
+import { sortBy, keyBy } from 'lodash';
 import cx from 'classnames';
 import copy from 'copy-text-to-clipboard';
 
-import { getDefinition } from 'app/lib/manifestData';
+// import { getDefinition } from 'app/lib/manifestData';
 
 import * as destiny from 'app/lib/destiny';
 import * as ls from 'app/lib/ls';
 import { getDefaultLanguage, getBrowserLocale } from 'app/lib/i18n';
+import { query } from 'app/lib/apollo';
 import Header from 'app/components/Header';
 import Footer from 'app/components/Footer';
 import Xur from 'app/components/Xur';
@@ -64,6 +65,27 @@ const defaultFilter = {
   [SHOW_PS4_EXCLUSIVES]: true
 };
 
+const ITEM_QUERY = `
+  query gg($itemHashes: [ID]!) {
+    items(hashes: $itemHashes) {
+      hash
+      classType
+      displayProperties {
+        name
+        description
+        icon
+      }
+      inventory {
+        tierType {
+          displayProperties {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
 class Gearsets extends Component {
   inventory = [];
 
@@ -102,6 +124,7 @@ class Gearsets extends Component {
       ].join('|')
     );
 
+<<<<<<< HEAD
     this.dataPromise = Promise.all([
       getDefinition('DestinyInventoryItemDefinition', langCode),
       getDefinition('DestinyVendorDefinition', langCode)
@@ -115,6 +138,18 @@ class Gearsets extends Component {
       this.xurItems = xurItems;
       this.processSets(...data);
     });
+=======
+    this.fetchGraphData();
+
+    // this.dataPromise = Promise.all([
+    //   getDefinition('DestinyInventoryItemDefinition'),
+    //   getDefinition('DestinyVendorDefinition')
+    // ]);
+
+    // this.dataPromise.then(result => {
+    //   this.processSets(...result);
+    // });
+>>>>>>> use GraphQL on gearsets page
   }
 
   componentWillReceiveProps(newProps) {
@@ -122,24 +157,27 @@ class Gearsets extends Component {
       this.fetchCharacters(newProps);
     }
 
-    if (this.props.route !== newProps.route) {
-      this.dataPromise.then(result => {
-        this.processSets(...result);
-      });
-    }
+    // if (this.props.route !== newProps.route) {
+    //   this.dataPromise.then(result => {
+    //     this.processSets(...result);
+    //   });
+    // }
   }
 
-  processSets = (itemDefs, vendorDefs) => {
+  processSets = (_itemDefs, _vendorDefs) => {
     const xurHashes = this.xurItems || [];
-    // this.profile = require('/Users/joshhunt/Downloads/8dsNBgMD.json');
+    console.log('Running processSets');
 
+    const itemDefs = this.itemDefs; // TODO: avoid putting this on instance
     const sets = VARIATIONS[this.props.route.variation];
 
     const allItems = Object.values(itemDefs);
 
-    const kioskItems = this.profile
-      ? destiny.collectItemsFromKiosks(this.profile, itemDefs, vendorDefs)
-      : [];
+    // const kioskItems = this.profile
+    //   ? destiny.collectItemsFromKiosks(this.profile, itemDefs, vendorDefs)
+    //   : [];
+
+    const kioskItems = [];
 
     const inventory = [...this.inventory, ...kioskItems];
 
@@ -195,6 +233,8 @@ class Gearsets extends Component {
 
     let totalItemCount = 0;
     let totalObtainedCount = 0;
+
+    console.log('Item filter:', filter);
 
     // fuck me, this is bad. filter all the items
     const filteredGroups = rawGroups.reduce((groupAcc, _group) => {
@@ -293,6 +333,7 @@ class Gearsets extends Component {
   };
 
   fetchCharacters = (props = this.props) => {
+    console.log('fetchCharacters', props);
     if (!props.isAuthenticated) {
       return;
     }
@@ -352,8 +393,29 @@ class Gearsets extends Component {
       }
     });
 
-    this.dataPromise.then(result => {
-      this.processSets(...result);
+    console.log('Inventory:', this.inventory);
+
+    this.processSets();
+
+    // this.fetchGraphData(this.inventory);
+
+    // this.dataPromise.then(result => {
+    //   this.processSets(...result);
+    // });
+  };
+
+  fetchGraphData = () => {
+    // Collect item IDs from the sets list
+    const setItems = flatMapSetItems(setsSets);
+
+    console.log('All set items:', setItems);
+
+    query(ITEM_QUERY, { itemHashes: setItems }).then(gql => {
+      this.itemDefs = keyBy(gql.data.items, i => i.hash);
+
+      console.log('All set item defs:', this.itemDefs);
+
+      this.processSets();
     });
   };
 
@@ -418,9 +480,9 @@ class Gearsets extends Component {
       hasInventory
     } = this.state;
 
-    if (loading) {
-      return <Loading>Loading...</Loading>;
-    }
+    // if (loading) {
+    //   return <Loading>Loading...</Loading>;
+    // }
 
     return (
       <div className={styles.root}>
